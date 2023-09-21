@@ -13,7 +13,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/streanger/sets-matcher",
-    packages=['sets-matcher',],
+    packages=['sets_matcher',],
     install_requires=requirements,
     entry_points={
         "console_scripts": [

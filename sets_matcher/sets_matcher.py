@@ -12,7 +12,7 @@ from termcolor import colored
 
 def match_files(files: list[Path] | list[str]) -> tuple[list[str], list[list]]:
     """Returns a list of sets that match in a matrix.
-    
+
     accepts list of files
     """
     if not files:
