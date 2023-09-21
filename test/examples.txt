@@ -1,0 +1,117 @@
+['key', '1', '2', '3', '4', '5', '6']
+('above', False, False, False, False, True, False)
+('almost', False, False, False, True, False, False)
+('completely', False, False, True, False, False, False)
+('few', True, True, False, True, False, False)
+('here', False, False, False, False, False, True)
+('is', False, False, True, False, False, False)
+('last', False, False, False, True, True, False)
+('letters', True, True, False, True, False, False)
+('matches', False, False, False, False, True, False)
+('one', False, False, False, True, False, False)
+('other', False, True, False, False, False, False)
+('put', False, False, False, False, False, True)
+('some', True, False, False, False, True, False)
+('something', False, False, True, False, False, False)
+('then', False, False, False, False, False, True)
+('this', False, False, True, False, False, False)
+('with', True, True, False, True, False, False)
+('words', True, True, False, False, True, True)
+╒════════════╤═══════╤═══════╤═══════╤═══════╤═══════╤═══════╕
+│ key        │ 1     │ 2     │ 3     │ 4     │ 5     │ 6     │
+╞════════════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╡
+│ above      │ False │ False │ False │ False │ True  │ False │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ almost     │ False │ False │ False │ True  │ False │ False │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ completely │ False │ False │ True  │ False │ False │ False │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ few        │ True  │ True  │ False │ True  │ False │ False │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ here       │ False │ False │ False │ False │ False │ True  │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ is         │ False │ False │ True  │ False │ False │ False │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ last       │ False │ False │ False │ True  │ True  │ False │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ letters    │ True  │ True  │ False │ True  │ False │ False │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ matches    │ False │ False │ False │ False │ True  │ False │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ one        │ False │ False │ False │ True  │ False │ False │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ other      │ False │ True  │ False │ False │ False │ False │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ put        │ False │ False │ False │ False │ False │ True  │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ some       │ True  │ False │ False │ False │ True  │ False │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ something  │ False │ False │ True  │ False │ False │ False │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ then       │ False │ False │ False │ False │ False │ True  │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ this       │ False │ False │ True  │ False │ False │ False │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ with       │ True  │ True  │ False │ True  │ False │ False │
+├────────────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ words      │ True  │ True  │ False │ False │ True  │ True  │
+╘════════════╧═══════╧═══════╧═══════╧═══════╧═══════╧═══════╛
++------------+-------+-------+-------+-------+-------+-------+
+| key        | 1     | 2     | 3     | 4     | 5     | 6     |
++============+=======+=======+=======+=======+=======+=======+
+| above      | False | False | False | False | True  | False |
++------------+-------+-------+-------+-------+-------+-------+
+| almost     | False | False | False | True  | False | False |
++------------+-------+-------+-------+-------+-------+-------+
+| completely | False | False | True  | False | False | False |
++------------+-------+-------+-------+-------+-------+-------+
+| few        | True  | True  | False | True  | False | False |
++------------+-------+-------+-------+-------+-------+-------+
+| here       | False | False | False | False | False | True  |
++------------+-------+-------+-------+-------+-------+-------+
+| is         | False | False | True  | False | False | False |
++------------+-------+-------+-------+-------+-------+-------+
+| last       | False | False | False | True  | True  | False |
++------------+-------+-------+-------+-------+-------+-------+
+| letters    | True  | True  | False | True  | False | False |
++------------+-------+-------+-------+-------+-------+-------+
+| matches    | False | False | False | False | True  | False |
++------------+-------+-------+-------+-------+-------+-------+
+| one        | False | False | False | True  | False | False |
++------------+-------+-------+-------+-------+-------+-------+
+| other      | False | True  | False | False | False | False |
++------------+-------+-------+-------+-------+-------+-------+
+| put        | False | False | False | False | False | True  |
++------------+-------+-------+-------+-------+-------+-------+
+| some       | True  | False | False | False | True  | False |
++------------+-------+-------+-------+-------+-------+-------+
+| something  | False | False | True  | False | False | False |
++------------+-------+-------+-------+-------+-------+-------+
+| then       | False | False | False | False | False | True  |
++------------+-------+-------+-------+-------+-------+-------+
+| this       | False | False | True  | False | False | False |
++------------+-------+-------+-------+-------+-------+-------+
+| with       | True  | True  | False | True  | False | False |
++------------+-------+-------+-------+-------+-------+-------+
+| words      | True  | True  | False | False | True  | True  |
++------------+-------+-------+-------+-------+-------+-------+
+| key        | 1     | 2     | 3     | 4     | 5     | 6     |
+|------------|-------|-------|-------|-------|-------|-------|
+| above      | False | False | False | False | True  | False |
+| almost     | False | False | False | True  | False | False |
+| completely | False | False | True  | False | False | False |
+| few        | True  | True  | False | True  | False | False |
+| here       | False | False | False | False | False | True  |
+| is         | False | False | True  | False | False | False |
+| last       | False | False | False | True  | True  | False |
+| letters    | True  | True  | False | True  | False | False |
+| matches    | False | False | False | False | True  | False |
+| one        | False | False | False | True  | False | False |
+| other      | False | True  | False | False | False | False |
+| put        | False | False | False | False | False | True  |
+| some       | True  | False | False | False | True  | False |
+| something  | False | False | True  | False | False | False |
+| then       | False | False | False | False | False | True  |
+| this       | False | False | True  | False | False | False |
+| with       | True  | True  | False | True  | False | False |
+| words      | True  | True  | False | False | True  | True  |
