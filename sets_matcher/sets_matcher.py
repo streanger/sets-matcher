@@ -129,7 +129,7 @@ def main():
     # skip empty content
     if not list_of_sets:
         print("\[x] nothing to process")
-        return False
+        return None
 
     # match sets
     header, table = match_sets(list_of_sets)
@@ -148,10 +148,10 @@ def main():
         # create pretty table
         rich_table = to_rich_table(header, table)
         print(rich_table)
-        return True
+        return None
 
     print(f'[+] output saved to: [blue]{args.output}[/blue]')
-    return True
+    return None
 
 
 def expand_globs(raw_files):
