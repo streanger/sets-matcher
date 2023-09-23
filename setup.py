@@ -4,7 +4,7 @@ from pathlib import Path
 long_description = Path('README.md').read_text()
 requirements = Path('requirements.txt').read_text().splitlines()
 # pip install termcolor rich tabulate charset-normalizer
-# test: pip install termcolor rich tabulate charset-normalizer pytest
+# test: pip install termcolor rich tabulate charset-normalizer pytest mypy
 
 setuptools.setup(
     name='sets-matcher',
