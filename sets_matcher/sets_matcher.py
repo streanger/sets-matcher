@@ -2,6 +2,7 @@ import argparse
 import csv
 from io import StringIO
 from pathlib import Path
+from typing import Union
 
 import charset_normalizer
 import tabulate
@@ -10,7 +11,7 @@ from rich.table import Table
 from termcolor import colored
 
 
-def match_files(files: list[Path] | list[str]) -> tuple[list[str], list[list]]:
+def match_files(files: Union[list[Path], list[str]]) -> tuple[list[str], list[list]]:
     """Returns a list of sets that match in a matrix.
 
     accepts list of files
