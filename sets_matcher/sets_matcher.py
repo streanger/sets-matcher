@@ -137,13 +137,13 @@ def main():
     # write to file
     if args.format == "csv":
         csv = to_csv(header, table)
-        Path(args.output).write_text(csv)
+        Path(args.output).write_text(csv, encoding="utf-8")
     elif args.format == "md":
         md = to_markdown(header, table)
-        Path(args.output).write_text(md)
+        Path(args.output).write_text(md, encoding="utf-8")
     elif args.format == "html":
         html = to_html(header, table)
-        Path(args.output).write_text(html)
+        Path(args.output).write_text(html, encoding="utf-8")
     else:
         # create pretty table
         rich_table = to_rich_table(header, table)

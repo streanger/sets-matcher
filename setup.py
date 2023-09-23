@@ -8,7 +8,7 @@ requirements = Path('requirements.txt').read_text().splitlines()
 
 setuptools.setup(
     name='sets-matcher',
-    version='0.1.1',
+    version='0.1.2',
     author="streanger",
     description="sets matcher",
     long_description=long_description,
