@@ -206,8 +206,64 @@ def to_markdown(header, table):
 
 def to_html(header, table):
     """convert table with list of lists to html table"""
-    html = tabulate.tabulate(table, header, tablefmt="html")
-    return html
+    tab = ' '*4
+    table_head = '\n'.join([f"{tab*4}<th>{column}</th>" for column in header])
+    table_body = ""
+    for row in table:
+        cells = []
+        for column in row:
+            if type(column) is bool:
+                column = "✓" if column else ""
+            cells.append(f"{tab*5}<td>{column}</td>\n")
+        cells = ''.join(cells)
+        table_body += f"{tab*4}<tr>\n{cells}{tab*4}</tr>\n"
+
+    style = """\
+        <style>
+        .styled-table {
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.9em;
+            font-family: sans-serif;
+            min-width: 400px;
+        }
+        .styled-table thead tr {
+            background-color: #009879;
+            color: #ffffff;
+        }
+        .styled-table th,
+        .styled-table td {
+            padding: 12px 15px;
+            text-align: center;
+        }
+        .styled-table tbody tr {
+            border-bottom: 1px solid #dddddd;
+        }
+        </style>\
+    """
+
+    template = f"""\
+<html>
+    <head>
+        <title>sets matcher</title>
+        <meta charset="utf-8">
+{style}
+    </head>
+    <body>
+        <table class="styled-table">
+            <thead>
+                <tr>
+{table_head}
+                </tr>
+            </thead>
+            <tbody>
+{table_body}
+            </tbody>
+        </table>
+    </body>
+</html>\
+"""
+    return template
 
 
 def to_csv(header, table):
@@ -223,9 +279,7 @@ def to_csv(header, table):
 
 def to_xlsx(header, table):
     """convert table with list of lists to xlsx table"""
-    # TODO: fix xlsx output
-    xlsx = tabulate.tabulate(table, header, tablefmt="xlsx")
-    return xlsx
+    raise NotImplementedError("xlsx output is not implemented yet")
 
 
 if __name__ == "__main__":

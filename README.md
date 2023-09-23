@@ -25,6 +25,10 @@ options:
   --format {csv,md,html}, -f {csv,md,html}
 ```
 
+```
+matcher --format md --output out.md set1.txt set2.txt set3.txt
+matcher --format csv --output out.csv *.txt
+```
 
 ## usage (python)
 
