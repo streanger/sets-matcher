@@ -214,8 +214,15 @@ def to_html(header, table):
         cells = []
         for column in row:
             if type(column) is bool:
-                column = "✓" if column else ""
-            cells.append(f"{tab*5}<td>{column}</td>\n")
+                if column:
+                    column = "✓"
+                    cell_style = "style=\"background-color: #cccccc; border-radius: 10px;\""
+                else:
+                    column = ""
+                    cell_style = ""
+            else:
+                cell_style = ""
+            cells.append(f"{tab*5}<td {cell_style}>{column}</td>\n")
         cells = ''.join(cells)
         table_body += f"{tab*4}<tr>\n{cells}{tab*4}</tr>\n"
 
@@ -236,6 +243,10 @@ def to_html(header, table):
         .styled-table td {
             padding: 12px 15px;
             text-align: center;
+        }
+        .styled-table td:first-child {
+            padding: 12px 15px;
+            text-align: right;
         }
         .styled-table tbody tr {
             border-bottom: 1px solid #dddddd;
