@@ -57,3 +57,10 @@ print(rich_table)
 
 ![image](images/matcher.png)
 ![image](images/matcher-to-html2.png)
+
+
+## changelog
+
+- `0.1.6` - sortable html table
+- `...`
+- `0.1.0` - initial release

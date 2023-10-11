@@ -208,7 +208,7 @@ def to_markdown(header, table):
 def to_html(header, table):
     """convert table with list of lists to html table"""
     tab = ' '*4
-    table_head = '\n'.join([f"{tab*4}<th>{column}</th>" for column in header])
+    table_head = '\n'.join([f"{tab*4}<th><button>{column}</button></th>" for column in header])
     table_body = ""
     for row in table:
         cells = []
@@ -216,21 +216,23 @@ def to_html(header, table):
             if type(column) is bool:
                 if column:
                     column = "✓"
-                    cell_style = "style=\"background-color: #cccccc; border-radius: 10px;\""
+                    cell_class = 'class="marker"'
                 else:
                     column = ""
-                    cell_style = ""
+                    cell_class = ""
             else:
-                cell_style = ""
-            cells.append(f"{tab*5}<td {cell_style}>{column}</td>\n")
+                cell_class = ""
+            cells.append(f"{tab*5}<td {cell_class}>{column}</td>\n")
         cells = ''.join(cells)
         table_body += f"{tab*4}<tr>\n{cells}{tab*4}</tr>\n"
+    table_body = table_body.rstrip()
 
-    style = """\
-        <style>
+    # TODO: read style & script from files
+    style = '''\
         .styled-table {
             border-collapse: collapse;
-            margin: 25px 0;
+            margin-left: auto;
+            margin-right: auto;
             font-size: 0.9em;
             font-family: sans-serif;
             min-width: 400px;
@@ -239,7 +241,6 @@ def to_html(header, table):
             background-color: #009879;
             color: #ffffff;
         }
-        .styled-table th,
         .styled-table td {
             padding: 12px 15px;
             text-align: center;
@@ -251,17 +252,101 @@ def to_html(header, table):
         .styled-table tbody tr {
             border-bottom: 1px solid #dddddd;
         }
-        </style>\
-    """
+        .styled-table th {
+            padding: 0;
+            text-align: center;
+        }
+        .styled-table th button {
+            background-color: transparent;
+            border: none;
+            font: inherit;
+            color: inherit;
+            height: 100%;
+            width: 100%;
+            padding: 12px 15px;
+            display: inline-block;
+        }
+        .styled-table th button::after {
+            content: "\\00a0\\00a0";
+            font-family: 'Courier New', Courier, monospace
+        }
+        .styled-table th button[direction="ascending"]::after {
+            content: " ▲";
+        }
+        .styled-table th button[direction="descending"]::after {
+            content: " ▼";
+        }
+        .marker {
+        background-color: #cccccc;
+        border-radius: 10px;
+        }'''
+
+    script = """\
+// https://webdesign.tutsplus.com/how-to-create-a-sortable-html-table-with-javascript--cms-92993t
+// https://css-tricks.com/almanac/selectors/a/after-and-before/
+// https://stackoverflow.com/questions/2965229/nbsp-not-working-in-css-content-tag
+// https://stackoverflow.com/questions/7790811/how-do-i-put-variables-inside-javascript-strings
+
+function main() {
+    var table = document.getElementsByTagName("table")[0];
+    var header = table.getElementsByTagName("tr")[0];
+    var headers = header.getElementsByTagName("th");
+    for (var i = 0; i < headers.length; i++) {
+        var btn = headers[i].getElementsByTagName("button")[0];
+        btn.setAttribute("onclick", `table_sorter(${i})`);
+    }
+}
+
+function table_sorter(column) {
+    var table = document.getElementsByTagName("table")[0];
+    var tableBody = table.getElementsByTagName("tbody")[0];
+    var columnButton = table.getElementsByTagName("tr")[0].getElementsByTagName("th")[column].getElementsByTagName("button")[0];
+    var direction = columnButton.getAttribute("direction");
+    if (direction == "ascending") {
+        direction = "descending";
+    } else {
+        direction = "ascending";
+    }
+    var rows = Array.from(table.getElementsByTagName("tr")).slice(1);
+    rows.sort(function(a, b) {
+        var x = a.getElementsByTagName("td")[column].textContent.toLowerCase();
+        var y = b.getElementsByTagName("td")[column].textContent.toLowerCase();
+        if (direction === "ascending") {
+            return x.localeCompare(y);
+        } else {
+            return y.localeCompare(x);
+        }
+    });
+    rows.forEach(function(row) {
+        tableBody.appendChild(row);
+    });
+
+    // show direction using arrow icon
+    var header = table.getElementsByTagName("tr")[0];
+    var headers = header.getElementsByTagName("th");
+    for (var i = 0; i < headers.length; i++) {
+        var btn = headers[i].getElementsByTagName("button")[0];
+        if (i == column) {
+            btn.setAttribute("direction", direction);
+        } else {
+            btn.setAttribute("direction", "");
+        }
+    }
+}"""
 
     template = f"""\
 <html>
     <head>
         <title>sets matcher</title>
         <meta charset="utf-8">
+        <style>
 {style}
+        </style>
+        <script>
+{script}
+        </script>
     </head>
-    <body>
+    <body onload=main()>
         <table class="styled-table">
             <thead>
                 <tr>
