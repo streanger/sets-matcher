@@ -11,9 +11,14 @@ pip install git+https://github.com/streanger/sets-matcher.git
 ## usage (cli)
 
 ```
-usage: [-h] [--verbose] [--output OUTPUT] [--format {csv,md,html}] files [files ...]
+usage: __main__.py [-h] [--verbose] [--output OUTPUT] [--format {csv,md,html}] files [files ...]
 
-~~< sets matcher >~~
++----------------------------------------------------+
+|                    sets-matcher                    |
+|----------------------------------------------------|
+| version: 0.1.7                                     |
+|    home: https://github.com/streanger/sets-matcher |
++----------------------------------------------------+
 
 positional arguments:
   files
@@ -28,6 +33,7 @@ options:
 ```
 matcher --format md --output out.md set1.txt set2.txt set3.txt
 matcher --format csv --output out.csv *.txt
+matcher --output out.html *.txt
 ```
 
 ## usage (python)
@@ -61,6 +67,7 @@ print(rich_table)
 
 ## changelog
 
+- `0.1.7` - html header top sticky, cli - guess format based on output suffix, checkmark in md export, termcolor removed from dependencies
 - `0.1.6` - sortable html table
 - `...`
 - `0.1.0` - initial release

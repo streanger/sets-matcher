@@ -1,9 +1,9 @@
 | key    | 1     | 2     | 3     |
 |--------|-------|-------|-------|
-| here   | True  | True  | True  |
-| is     | False | True  | False |
-| now    | False | False | True  |
-| some   | True  | True  | True  |
-| sparta | False | True  | False |
-| thing  | True  | True  | True  |
-| this   | False | True  | True  |
+| here   | [ ✓ ] | [ ✓ ] | [ ✓ ] |
+| is     |       | [ ✓ ] |       |
+| now    |       |       | [ ✓ ] |
+| some   | [ ✓ ] | [ ✓ ] | [ ✓ ] |
+| sparta |       | [ ✓ ] |       |
+| thing  | [ ✓ ] | [ ✓ ] | [ ✓ ] |
+| this   |       | [ ✓ ] | [ ✓ ] |

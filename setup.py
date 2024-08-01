@@ -3,12 +3,16 @@ from pathlib import Path
 
 long_description = Path('README.md').read_text()
 requirements = Path('requirements.txt').read_text().splitlines()
-# pip install termcolor rich tabulate charset-normalizer
-# test: pip install termcolor rich tabulate charset-normalizer pytest mypy
+# pip install rich tabulate charset-normalizer
+# test: pip install rich tabulate charset-normalizer pytest mypy
+
+version_path = Path(__file__).parent / "sets_matcher/__version__.py"
+version_info = {}
+exec(version_path.read_text(), version_info)
 
 setuptools.setup(
     name='sets-matcher',
-    version='0.1.6',
+    version=version_info["__version__"],
     author="streanger",
     description="sets matcher",
     long_description=long_description,

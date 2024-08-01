@@ -1,5 +1,6 @@
 import argparse
 import csv
+import html
 from io import StringIO
 from pathlib import Path
 from typing import Union
@@ -8,7 +9,8 @@ import charset_normalizer
 import tabulate
 from rich import print
 from rich.table import Table
-from termcolor import colored
+
+from sets_matcher.__version__ import __version__
 
 
 def match_files(files: Union[list[Path], list[str]]) -> tuple[list[str], list[list]]:
@@ -77,19 +79,45 @@ def match_sets(list_of_sets: list[set] | list[tuple[str, set]]) -> tuple[list[st
 
 def parse_args():
     """parse cli arguments"""
-    description = colored("~~< sets matcher >~~", "green")
-    parser = argparse.ArgumentParser(description=description)
+    GREEN = "\u001b[32m"
+    YELLOW = "\u001b[33m"
+    RED = "\u001b[31m"
+    BLUE = "\u001b[34m"
+    CYAN = "\u001b[36m"
+    RESET = "\u001b[0m"
+    version_justed = f"{__version__:<16}"
+    box = f"""\
++----------------------------------------------------+
+|                    sets-matcher                    |
+|----------------------------------------------------|
+| version: {version_justed}                          |
+|    home: https://github.com/streanger/sets-matcher |
++----------------------------------------------------+"""
+    description = f"{GREEN}{box}{RESET}"
+    allowed_formats = ("csv", "md", "html")
+    parser = argparse.ArgumentParser(description=description, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("files", nargs="+", type=Path)
     parser.add_argument("--verbose", "-v", action="store_true")
     parser.add_argument("--output", "-o", type=Path)
-    parser.add_argument("--format", "-f", choices=["csv", "md", "html"])  # TODO: xlsx
+    parser.add_argument("--format", "-f", choices=allowed_formats)  # TODO: xlsx
     args = parser.parse_args()
 
-    # if output is given, format is required
     if args.output and not args.format:
-        parser.error("--output requires --format")
+        # try to guess format
+        allowed_suffixes = [f'.{item}' for item in allowed_formats]
+        suffix = Path(args.output).suffix
+        if suffix in allowed_suffixes:
+            guessed_format = suffix.lstrip('.')
+            args.format = guessed_format
+            if args.verbose:
+                print(f"[*] format guessed: {guessed_format}")
+            return args
+        parser.error(f"--output requires --format or correct suffix {tuple(allowed_suffixes)}")
     elif args.format and not args.output:
         parser.error("--format requires --output")
+    elif args.format and args.output:
+        # format is stronger then output suffix
+        pass
     return args
 
 
@@ -201,11 +229,21 @@ def to_rich_table(header, table, show_lines: bool = False):
 
 def to_markdown(header, table):
     """convert table with list of lists to markdown table (github flavored)"""
+    def apply_marker(item):
+        marker_true = "[ ✓ ]"
+        marker_false = ""
+        if type(item) is bool:
+            if item:
+                return marker_true
+            else:
+                return marker_false
+        return item
+    table = [[apply_marker(item) for item in row] for row in table]
     md = tabulate.tabulate(table, header, tablefmt="github")
     return md
 
 
-def to_html(header, table):
+def to_html(header, table, title="sets-matcher"):
     """convert table with list of lists to html table"""
     tab = ' '*4
     table_head = '\n'.join([f"{tab*4}<th><button>{column}</button></th>" for column in header])
@@ -240,6 +278,8 @@ def to_html(header, table):
         .styled-table thead tr {
             background-color: #009879;
             color: #ffffff;
+            position: sticky;
+            top: 0;
         }
         .styled-table td {
             padding: 12px 15px;
@@ -334,10 +374,12 @@ function table_sorter(column) {
     }
 }"""
 
+    title = html.escape(title)
     template = f"""\
+<!DOCTYPE html>
 <html>
     <head>
-        <title>sets matcher</title>
+        <title>{title}</title>
         <meta charset="utf-8">
         <style>
 {style}

@@ -7,7 +7,7 @@ pip install -r requirements-test.txt
 or
 
 ```bash
-pip install termcolor rich tabulate charset-normalizer pytest mypy
+pip install rich tabulate charset-normalizer pytest mypy
 ```
 
 ## pytest
