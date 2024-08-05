@@ -1,46 +1,66 @@
 import argparse
 import csv
 import html
+import logging
 from io import StringIO
 from pathlib import Path
-from typing import Union
+from typing import Set, Tuple
 
 import charset_normalizer
 import tabulate
 from rich import print
+from rich.logging import RichHandler
 from rich.table import Table
 
 from sets_matcher.__version__ import __version__
 
 
-def match_files(files: Union[list[Path], list[str]]) -> tuple[list[str], list[list]]:
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+    datefmt="[%X]",
+    handlers=[RichHandler(markup=True)]
+)
+logger = logging.getLogger("__name__")
+
+
+def match_files(files: list[str | Path], max_size: int | None = None) -> tuple[list[str], list[list[bool]]]:
     """Returns a list of sets that match in a matrix.
 
-    accepts list of files
+    files: list of files
+    max_size: maximu size [B] of single processed file
     """
     if not files:
         raise ValueError("empty list of files")
 
-    files = expand_globs(files)
+    pathlib_files = expand_globs(files)
 
-    list_of_sets = []
-    for path in files:
+    list_of_sets: list[tuple[str, set[str]]] = []
+    for path in pathlib_files:
         try:
+            if not max_size is None:
+                size = path.stat().st_size
+                if size > max_size:
+                    logger.warning("file size is too big: [blue]%s[/blue]", path)
+                    continue
             content = path.read_bytes()
         except FileNotFoundError as err:
-            print(f"\[x] file not found: [blue]{path}[/blue]")
+            logger.error("file not found: [blue]%s[/blue]", path)
             continue
         except PermissionError as err:
-            print(f"\[x] permission denied: [blue]{path}[/blue]")
+            logger.error("permission denied: [blue]%s[/blue]", path)
             continue
         except OSError as err:
-            print(f"\[x] {err}")
+            logger.error("%s: [blue]%s[/blue]", str(err), path)
             continue
         encoding = charset_normalizer.detect(content)["encoding"]
+        if not isinstance(encoding, str):
+            logger.error("failed to detect encoding of [blue]%s[blue]", path)
+            continue
         items = set(content.decode(encoding).splitlines())
         name = path.stem
         list_of_sets.append((name, items))
-        print(f"[+] {path} loaded with {len(items)} items")
+        logger.info("[blue]%s[/blue] loaded with %d items", path, len(items))
 
     # raise error if nothing to process
     if not list_of_sets:
@@ -50,7 +70,7 @@ def match_files(files: Union[list[Path], list[str]]) -> tuple[list[str], list[li
     return match_sets(list_of_sets)
 
 
-def match_sets(list_of_sets: list[set] | list[tuple[str, set]]) -> tuple[list[str], list[list]]:
+def match_sets(list_of_sets: list[set[str]] | list[tuple[str, set[str]]]) -> tuple[list[str], list[list[bool]]]:
     """
     Returns a list of sets that match in a matrix.
 
@@ -62,7 +82,7 @@ def match_sets(list_of_sets: list[set] | list[tuple[str, set]]) -> tuple[list[st
     if all((type(row) is set) for row in list_of_sets):
         header = ["key"] + [str(x) for x in range(1, len(list_of_sets) + 1)]
     elif all(
-        (len(row) == 2 and type(row[0] is str and type(row[1]) is set))
+        (type(row) is tuple and len(row) == 2 and type(row[0]) is str and type(row[1]) is set)
         for row in list_of_sets
     ):
         header = ["key"] + [name for name, _ in list_of_sets]
@@ -77,7 +97,7 @@ def match_sets(list_of_sets: list[set] | list[tuple[str, set]]) -> tuple[list[st
     return header, table
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     """parse cli arguments"""
     GREEN = "\u001b[32m"
     YELLOW = "\u001b[33m"
@@ -101,6 +121,10 @@ def parse_args():
     parser.add_argument("--output", "-o", type=Path)
     parser.add_argument("--format", "-f", choices=allowed_formats)  # TODO: xlsx
     args = parser.parse_args()
+    if args.verbose:
+        logger.setLevel(level=logging.INFO)
+    else:
+        logger.setLevel(level=logging.WARNING)
 
     if args.output and not args.format:
         # try to guess format
@@ -109,8 +133,7 @@ def parse_args():
         if suffix in allowed_suffixes:
             guessed_format = suffix.lstrip('.')
             args.format = guessed_format
-            if args.verbose:
-                print(f"[*] format guessed: {guessed_format}")
+            logger.info("format guessed: [blue]%s[/blue]", guessed_format)
             return args
         parser.error(f"--output requires --format or correct suffix {tuple(allowed_suffixes)}")
     elif args.format and not args.output:
@@ -121,47 +144,18 @@ def parse_args():
     return args
 
 
-def main():
+def main() -> bool | None:
     """main cli entry point"""
     # parse cli arguments
     args = parse_args()
-    files = expand_globs(args.files)
 
-    # set size limit to avoid stupid situations
-    size_limit = 1024 * 1024 * 10  # 10 MB
-
-    # read files
-    list_of_sets = []
-    for path in files:
-        try:
-            size = path.stat().st_size
-            if size > size_limit:
-                print(f"[x] file size is too big: [blue]{path}[/blue]")
-                continue
-            content = path.read_bytes()
-        except FileNotFoundError as err:
-            print(f"\[x] file not found: [blue]{path}[/blue]")
-            continue
-        except PermissionError as err:
-            print(f"\[x] permission denied: [blue]{path}[/blue]")
-            continue
-        except OSError as err:
-            print(f"\[x] {err}")
-            continue
-        encoding = charset_normalizer.detect(content)["encoding"]
-        items = set(content.decode(encoding).splitlines())
-        name = path.stem
-        list_of_sets.append((name, items))
-        if args.verbose:
-            print(f"[+] {path} loaded with {len(items)} items")
-
-    # skip empty content
-    if not list_of_sets:
-        print("\[x] nothing to process")
-        return None
-
-    # match sets
-    header, table = match_sets(list_of_sets)
+    # match files
+    try:
+        max_size = 1024 * 1024 * 10  # 10 MB
+        header, table = match_files(files=args.files, max_size=max_size)
+    except ValueError as err:
+        logger.error(err)
+        return False
 
     # write to file
     if args.format == "csv":
@@ -179,11 +173,11 @@ def main():
         print(rich_table)
         return None
 
-    print(f'[+] output saved to: [blue]{args.output}[/blue]')
+    logger.info('output saved to: [blue]%s[/blue]', args.output)
     return None
 
 
-def expand_globs(raw_files):
+def expand_globs(raw_files: list[str|Path]) -> list[Path]:
     """expand globs in list of files"""
     root_path = Path(".")
     files = []
@@ -191,7 +185,7 @@ def expand_globs(raw_files):
         try:
             expanded = list(root_path.glob(str(path)))
         except ValueError as err:
-            print(f"\[x] {err}")
+            logger.error("%s", str(err))
             continue
         files.extend(expanded)
     # remove duplicates keep order
@@ -199,7 +193,7 @@ def expand_globs(raw_files):
     return files
 
 
-def to_rich_table(header, table, show_lines: bool = False):
+def to_rich_table(header: list[str], table: list[list[str | bool]], show_lines: bool = False) -> Table:
     """convert table with list of lists to rich module pretty table
 
     Args:
@@ -227,9 +221,9 @@ def to_rich_table(header, table, show_lines: bool = False):
     return rich_table
 
 
-def to_markdown(header, table):
+def to_markdown(header: list[str], table: list[list[str | bool]]) -> str:
     """convert table with list of lists to markdown table (github flavored)"""
-    def apply_marker(item):
+    def apply_marker(item: str|bool) -> str:
         marker_true = "[ ✓ ]"
         marker_false = ""
         if type(item) is bool:
@@ -243,7 +237,7 @@ def to_markdown(header, table):
     return md
 
 
-def to_html(header, table, title="sets-matcher"):
+def to_html(header: list[str], table: list[list[str | bool]], title: str = "sets-matcher") -> str:
     """convert table with list of lists to html table"""
     tab = ' '*4
     table_head = '\n'.join([f"{tab*4}<th><button>{column}</button></th>" for column in header])
@@ -261,8 +255,8 @@ def to_html(header, table, title="sets-matcher"):
             else:
                 cell_class = ""
             cells.append(f"{tab*5}<td {cell_class}>{column}</td>\n")
-        cells = ''.join(cells)
-        table_body += f"{tab*4}<tr>\n{cells}{tab*4}</tr>\n"
+        joined_cells = ''.join(cells)
+        table_body += f"{tab*4}<tr>\n{joined_cells}{tab*4}</tr>\n"
     table_body = table_body.rstrip()
 
     # TODO: read style & script from files
@@ -405,7 +399,7 @@ function table_sorter(column) {
     return template
 
 
-def to_csv(header, table):
+def to_csv(header: list[str], table: list[list[str | bool]]) -> str:
     """convert table with list of lists to csv table"""
     table.insert(0, header)
     output = StringIO()
@@ -416,7 +410,7 @@ def to_csv(header, table):
     return csv_string
 
 
-def to_xlsx(header, table):
+def to_xlsx(header: list[str], table: list[list[str | bool]]) -> None:
     """convert table with list of lists to xlsx table"""
     raise NotImplementedError("xlsx output is not implemented yet")
 

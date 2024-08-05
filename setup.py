@@ -20,6 +20,7 @@ setuptools.setup(
     url="https://github.com/streanger/sets-matcher",
     packages=['sets_matcher',],
     install_requires=requirements,
+    python_requires='>=3.10',
     entry_points={
         "console_scripts": [
             "matcher=sets_matcher:main",

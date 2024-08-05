@@ -1,16 +1,16 @@
 # TODO: write tests for different characters set e.g. ascii, UTF-8, UTF-16, UTF-32
 
+from pathlib import Path
 from sets_matcher.sets_matcher import match_files
-
 
 def test_charset():
     """test charset detection"""
-    ascii_files = [
+    ascii_files: list[str | Path] = [
         'test/data/ascii-set1.txt',
         'test/data/ascii-set2.txt',
         'test/data/ascii-set3.txt'
     ]
-    utf16_files = [
+    utf16_files: list[str | Path] = [
         'test/data/utf16-set1.txt',
         'test/data/utf16-set2.txt',
         'test/data/utf16-set3.txt'
