@@ -305,10 +305,10 @@ def to_html(header: list[str], table: list[list[str | bool]], title: str = "sets
             font-family: 'Courier New', Courier, monospace
         }
         .styled-table th button[direction="ascending"]::after {
-            content: " ▲";
+            content: "\\00a0▲";
         }
         .styled-table th button[direction="descending"]::after {
-            content: " ▼";
+            content: "\\00a0▼";
         }
         .marker {
         background-color: #cccccc;
