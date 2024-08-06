@@ -250,13 +250,22 @@ def to_markdown(header: list[str], table: list[list[str | bool]]) -> str:
     return md
 
 
-def to_html(header: list[str], table: list[list[str | bool]], title: str = "sets-matcher") -> str:
+def to_html(
+    header: list[str],
+    table: list[list[str | bool]],
+    title: str = "sets-matcher",
+    index_column: bool = False
+) -> str:
     """convert table with list of lists to html table"""
+    if index_column:
+        header.insert(0, 'Index')
     tab = ' '*4
     table_head = '\n'.join([f"{tab*2}<th><button>{column}</button></th>" for column in header])
     table_body = ""
-    for row in table:
+    for row_index, row in enumerate(table, start=1):
         cells = []
+        if index_column:
+            cells.append(f'{tab*3}<td>{row_index}</td>\n')
         for column in row:
             if type(column) is bool:
                 if column:
@@ -328,6 +337,57 @@ def to_html(header: list[str], table: list[list[str | bool]], title: str = "sets
     border-radius: 10px;
     }"""
 
+    index_column_script = """\
+function main() {
+    var table = document.getElementsByTagName("table")[0];
+    var header = table.getElementsByTagName("tr")[0];
+    var headers = header.getElementsByTagName("th");
+    for (var i = 1; i < headers.length; i++) {
+        var btn = headers[i].getElementsByTagName("button")[0];
+        btn.setAttribute("onclick", `table_sorter(${i})`);
+    }
+}
+
+function table_sorter(column) {
+    var table = document.getElementsByTagName("table")[0];
+    var tableBody = table.getElementsByTagName("tbody")[0];
+    var columnButton = table.getElementsByTagName("tr")[0].getElementsByTagName("th")[column].getElementsByTagName("button")[0];
+    var direction = columnButton.getAttribute("direction");
+    if (direction == "ascending") {
+        direction = "descending";
+    } else {
+        direction = "ascending";
+    }
+    var rows = Array.from(table.getElementsByTagName("tr")).slice(1);
+    rows.sort(function(a, b) {
+        var x = a.cells[column].textContent.toLowerCase();
+        var y = b.cells[column].textContent.toLowerCase();
+        if (direction === "ascending") {
+            return x - y || x.localeCompare(y);
+        } else {
+            return y - x || y.localeCompare(x);
+        }
+    });
+    tableBody.innerHTML = '';
+    rows.forEach((row, i) => {
+        var newRow = row.cloneNode(true);
+        newRow.cells[0].textContent = i + 1;
+        tableBody.appendChild(newRow);
+    });
+
+    // show direction using arrow icon
+    var header = table.getElementsByTagName("tr")[0];
+    var headers = header.getElementsByTagName("th");
+    for (var i = 0; i < headers.length; i++) {
+        var btn = headers[i].getElementsByTagName("button")[0];
+        if (i == column) {
+            btn.setAttribute("direction", direction);
+        } else {
+            btn.setAttribute("direction", "");
+        }
+    }
+}"""
+
     script = """\
 function main() {
     var table = document.getElementsByTagName("table")[0];
@@ -375,6 +435,9 @@ function table_sorter(column) {
         }
     }
 }"""
+    # dirty way to keep old style & previous performance
+    if index_column:
+        script = index_column_script
 
     title = html.escape(title)
     template = f"""\

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>sets-matcher</title>
+    <meta charset="utf-8">
+    <style>
+    .styled-table {
+        border-collapse: collapse;
+        margin-left: auto;
+        margin-right: auto;
+        font-size: 0.9em;
+        font-family: sans-serif;
+        min-width: 400px;
+    }
+    .styled-table thead tr {
+        background-color: #009879;
+        color: #ffffff;
+        position: sticky;
+        top: 0;
+    }
+    .styled-table td {
+        padding: 12px 15px;
+        text-align: center;
+    }
+    .styled-table td:first-child {
+        padding: 12px 15px;
+        text-align: right;
+    }
+    .styled-table tbody tr {
+        border-bottom: 1px solid #dddddd;
+    }
+    .styled-table th {
+        padding: 0;
+        text-align: center;
+    }
+    .styled-table th button {
+        background-color: transparent;
+        border: none;
+        font: inherit;
+        color: inherit;
+        height: 100%;
+        width: 100%;
+        padding: 12px 15px;
+        display: inline-block;
+    }
+    .styled-table th button::after {
+        content: "\00a0\00a0";
+        font-family: 'Courier New', Courier, monospace
+    }
+    .styled-table th button[direction="ascending"]::after {
+        content: "\00a0▲";
+    }
+    .styled-table th button[direction="descending"]::after {
+        content: "\00a0▼";
+    }
+    .marker {
+    background-color: #cccccc;
+    border-radius: 10px;
+    }
+    </style>
+    <script>
+function main() {
+    var table = document.getElementsByTagName("table")[0];
+    var header = table.getElementsByTagName("tr")[0];
+    var headers = header.getElementsByTagName("th");
+    for (var i = 1; i < headers.length; i++) {
+        var btn = headers[i].getElementsByTagName("button")[0];
+        btn.setAttribute("onclick", `table_sorter(${i})`);
+    }
+}
+
+function table_sorter(column) {
+    var table = document.getElementsByTagName("table")[0];
+    var tableBody = table.getElementsByTagName("tbody")[0];
+    var columnButton = table.getElementsByTagName("tr")[0].getElementsByTagName("th")[column].getElementsByTagName("button")[0];
+    var direction = columnButton.getAttribute("direction");
+    if (direction == "ascending") {
+        direction = "descending";
+    } else {
+        direction = "ascending";
+    }
+    var rows = Array.from(table.getElementsByTagName("tr")).slice(1);
+    rows.sort(function(a, b) {
+        var x = a.cells[column].textContent.toLowerCase();
+        var y = b.cells[column].textContent.toLowerCase();
+        if (direction === "ascending") {
+            return x - y || x.localeCompare(y);
+        } else {
+            return y - x || y.localeCompare(x);
+        }
+    });
+    tableBody.innerHTML = '';
+    rows.forEach((row, i) => {
+        var newRow = row.cloneNode(true);
+        newRow.cells[0].textContent = i + 1;
+        tableBody.appendChild(newRow);
+    });
+
+    // show direction using arrow icon
+    var header = table.getElementsByTagName("tr")[0];
+    var headers = header.getElementsByTagName("th");
+    for (var i = 0; i < headers.length; i++) {
+        var btn = headers[i].getElementsByTagName("button")[0];
+        if (i == column) {
+            btn.setAttribute("direction", direction);
+        } else {
+            btn.setAttribute("direction", "");
+        }
+    }
+}
+    </script>
+</head>
+<body onload=main()>
+    <table class="styled-table">
+    <thead>
+        <tr>
+        <th><button>Index</button></th>
+        <th><button>key</button></th>
+        <th><button>1</button></th>
+        <th><button>2</button></th>
+        <th><button>3</button></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td >here</td>
+            <td class="marker">✓</td>
+            <td class="marker">✓</td>
+            <td class="marker">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td >is</td>
+            <td ></td>
+            <td class="marker">✓</td>
+            <td ></td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td >now</td>
+            <td ></td>
+            <td ></td>
+            <td class="marker">✓</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td >some</td>
+            <td class="marker">✓</td>
+            <td class="marker">✓</td>
+            <td class="marker">✓</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td >sparta</td>
+            <td ></td>
+            <td class="marker">✓</td>
+            <td ></td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td >thing</td>
+            <td class="marker">✓</td>
+            <td class="marker">✓</td>
+            <td class="marker">✓</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td >this</td>
+            <td ></td>
+            <td class="marker">✓</td>
+            <td class="marker">✓</td>
+        </tr>
+    </tbody>
+    </table>
+</body>
+</html>

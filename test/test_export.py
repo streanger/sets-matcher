@@ -15,8 +15,20 @@ def test_export_html():
         webbrowser.open('test.html')
     """
     header, table = match_sets(SETS_EXAMPLE)
-    html = to_html(header, table)
+    html = to_html(header, table, index_column=False)
     test_html = Path('test/out/test.html').read_text(encoding='utf-8')
+    assert html == test_html
+
+
+def test_export_html_index_column():
+    """
+    to create & open test-index-column.html:
+        Path('test-index-column.html').write_text(html, encoding='utf-8')
+        webbrowser.open('test-index-column.html')
+    """
+    header, table = match_sets(SETS_EXAMPLE)
+    html = to_html(header, table, index_column=True)
+    test_html = Path('test/out/test-index-column.html').read_text(encoding='utf-8')
     assert html == test_html
 
 

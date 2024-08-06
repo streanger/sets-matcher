@@ -16,7 +16,7 @@ usage: __main__.py [-h] [--verbose] [--output OUTPUT] [--format {csv,md,html}] f
 +----------------------------------------------------+
 |                    sets-matcher                    |
 |----------------------------------------------------|
-| version: 0.1.7                                     |
+| version: 0.1.9                                     |
 |    home: https://github.com/streanger/sets-matcher |
 +----------------------------------------------------+
 
@@ -67,6 +67,7 @@ print(rich_table)
 
 ## changelog
 
+- `0.1.9` - `index_column` param in `to_html` function
 - `0.1.8` - a little o typing, rich logging, few fixes
 - `0.1.7` - html header top sticky, cli - guess format based on output suffix, checkmark in md export, termcolor removed from dependencies
 - `0.1.6` - sortable html table
