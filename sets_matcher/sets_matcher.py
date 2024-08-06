@@ -240,7 +240,7 @@ def to_markdown(header: list[str], table: list[list[str | bool]]) -> str:
 def to_html(header: list[str], table: list[list[str | bool]], title: str = "sets-matcher") -> str:
     """convert table with list of lists to html table"""
     tab = ' '*4
-    table_head = '\n'.join([f"{tab*4}<th><button>{column}</button></th>" for column in header])
+    table_head = '\n'.join([f"{tab*2}<th><button>{column}</button></th>" for column in header])
     table_body = ""
     for row in table:
         cells = []
@@ -254,73 +254,68 @@ def to_html(header: list[str], table: list[list[str | bool]], title: str = "sets
                     cell_class = ""
             else:
                 cell_class = ""
-            cells.append(f"{tab*5}<td {cell_class}>{column}</td>\n")
+            cells.append(f"{tab*3}<td {cell_class}>{column}</td>\n")
         joined_cells = ''.join(cells)
-        table_body += f"{tab*4}<tr>\n{joined_cells}{tab*4}</tr>\n"
+        table_body += f"{tab*2}<tr>\n{joined_cells}{tab*2}</tr>\n"
     table_body = table_body.rstrip()
 
     # TODO: read style & script from files
-    style = '''\
-        .styled-table {
-            border-collapse: collapse;
-            margin-left: auto;
-            margin-right: auto;
-            font-size: 0.9em;
-            font-family: sans-serif;
-            min-width: 400px;
-        }
-        .styled-table thead tr {
-            background-color: #009879;
-            color: #ffffff;
-            position: sticky;
-            top: 0;
-        }
-        .styled-table td {
-            padding: 12px 15px;
-            text-align: center;
-        }
-        .styled-table td:first-child {
-            padding: 12px 15px;
-            text-align: right;
-        }
-        .styled-table tbody tr {
-            border-bottom: 1px solid #dddddd;
-        }
-        .styled-table th {
-            padding: 0;
-            text-align: center;
-        }
-        .styled-table th button {
-            background-color: transparent;
-            border: none;
-            font: inherit;
-            color: inherit;
-            height: 100%;
-            width: 100%;
-            padding: 12px 15px;
-            display: inline-block;
-        }
-        .styled-table th button::after {
-            content: "\\00a0\\00a0";
-            font-family: 'Courier New', Courier, monospace
-        }
-        .styled-table th button[direction="ascending"]::after {
-            content: "\\00a0▲";
-        }
-        .styled-table th button[direction="descending"]::after {
-            content: "\\00a0▼";
-        }
-        .marker {
-        background-color: #cccccc;
-        border-radius: 10px;
-        }'''
+    style = """\
+    .styled-table {
+        border-collapse: collapse;
+        margin-left: auto;
+        margin-right: auto;
+        font-size: 0.9em;
+        font-family: sans-serif;
+        min-width: 400px;
+    }
+    .styled-table thead tr {
+        background-color: #009879;
+        color: #ffffff;
+        position: sticky;
+        top: 0;
+    }
+    .styled-table td {
+        padding: 12px 15px;
+        text-align: center;
+    }
+    .styled-table td:first-child {
+        padding: 12px 15px;
+        text-align: right;
+    }
+    .styled-table tbody tr {
+        border-bottom: 1px solid #dddddd;
+    }
+    .styled-table th {
+        padding: 0;
+        text-align: center;
+    }
+    .styled-table th button {
+        background-color: transparent;
+        border: none;
+        font: inherit;
+        color: inherit;
+        height: 100%;
+        width: 100%;
+        padding: 12px 15px;
+        display: inline-block;
+    }
+    .styled-table th button::after {
+        content: "\\00a0\\00a0";
+        font-family: 'Courier New', Courier, monospace
+    }
+    .styled-table th button[direction="ascending"]::after {
+        content: "\\00a0▲";
+    }
+    .styled-table th button[direction="descending"]::after {
+        content: "\\00a0▼";
+    }
+    .marker {
+    background-color: #cccccc;
+    border-radius: 10px;
+    }"""
 
     script = """\
-// https://webdesign.tutsplus.com/how-to-create-a-sortable-html-table-with-javascript--cms-92993t
-// https://css-tricks.com/almanac/selectors/a/after-and-before/
-// https://stackoverflow.com/questions/2965229/nbsp-not-working-in-css-content-tag
-// https://stackoverflow.com/questions/7790811/how-do-i-put-variables-inside-javascript-strings
-
 function main() {
     var table = document.getElementsByTagName("table")[0];
     var header = table.getElementsByTagName("tr")[0];
@@ -372,28 +367,28 @@ function table_sorter(column) {
     template = f"""\
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>{title}</title>
-        <meta charset="utf-8">
-        <style>
+<head>
+    <title>{title}</title>
+    <meta charset="utf-8">
+    <style>
 {style}
-        </style>
-        <script>
+    </style>
+    <script>
 {script}
-        </script>
-    </head>
-    <body onload=main()>
-        <table class="styled-table">
-            <thead>
-                <tr>
+    </script>
+</head>
+<body onload=main()>
+    <table class="styled-table">
+    <thead>
+        <tr>
 {table_head}
-                </tr>
-            </thead>
-            <tbody>
+        </tr>
+    </thead>
+    <tbody>
 {table_body}
-            </tbody>
-        </table>
-    </body>
+    </tbody>
+    </table>
+</body>
 </html>\
 """
     return template
