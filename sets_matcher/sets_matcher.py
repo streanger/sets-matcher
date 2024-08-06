@@ -2,6 +2,7 @@ import argparse
 import csv
 import html
 import logging
+import os
 from io import StringIO
 from pathlib import Path
 from typing import Set, Tuple
@@ -13,7 +14,6 @@ from rich.logging import RichHandler
 from rich.table import Table
 
 from sets_matcher.__version__ import __version__
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -99,6 +99,8 @@ def match_sets(list_of_sets: list[set[str]] | list[tuple[str, set[str]]]) -> tup
 
 def parse_args() -> argparse.Namespace:
     """parse cli arguments"""
+    if os.name == 'nt':
+        os.system('color')
     GREEN = "\u001b[32m"
     YELLOW = "\u001b[33m"
     RED = "\u001b[31m"
@@ -193,12 +195,19 @@ def expand_globs(raw_files: list[str|Path]) -> list[Path]:
     return files
 
 
-def to_rich_table(header: list[str], table: list[list[str | bool]], show_lines: bool = False) -> Table:
+def to_rich_table(
+    header: list[str],
+    table: list[list[str | bool]],
+    show_lines: bool = False,
+    key_style: str = 'green'
+) -> Table:
     """convert table with list of lists to rich module pretty table
 
     Args:
         header (str): table header
         table (list[list]): table body
+        show_lines (bool): show table horizontal lines
+        key_style (str): key column style - one of: regular, green, blue
     """
     rich_table = Table(
         highlight=True,
@@ -206,11 +215,15 @@ def to_rich_table(header: list[str], table: list[list[str | bool]], show_lines: 
         show_lines=show_lines,
         header_style="black on white",
     )
+    styles = {
+        'regular': "white on black",  # safest option
+        'green': "black on green_yellow",  # works fine with no highlight
+        'blue': "bold grey3 on deep_sky_blue3",  # better contrast than green
+    }
+    style = styles.get(key_style, "")
     for index, column in enumerate(header):
         if not index:
-            rich_table.add_column(
-                column, style="black on green_yellow", justify="right"
-            )
+            rich_table.add_column(column, style=style, justify="right")
         else:
             rich_table.add_column(column, justify="center")
     for index, row in enumerate(table):
