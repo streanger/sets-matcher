@@ -5,10 +5,11 @@ import logging
 import os
 from io import StringIO
 from pathlib import Path
-from typing import Set, Tuple
 
 import charset_normalizer
 import tabulate
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, PatternFill
 from rich import print
 from rich.logging import RichHandler
 from rich.table import Table
@@ -116,12 +117,13 @@ def parse_args() -> argparse.Namespace:
 |    home: https://github.com/streanger/sets-matcher |
 +----------------------------------------------------+"""
     description = f"{GREEN}{box}{RESET}"
-    allowed_formats = ("csv", "md", "html")
+    allowed_formats = ("csv", "md", "html", "xlsx")
     parser = argparse.ArgumentParser(description=description, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("files", nargs="+", type=Path)
     parser.add_argument("--verbose", "-v", action="store_true")
     parser.add_argument("--output", "-o", type=Path)
-    parser.add_argument("--format", "-f", choices=allowed_formats)  # TODO: xlsx
+    parser.add_argument("--format", "-f", choices=allowed_formats)
+    # TODO: --index - to add index column in output file
     args = parser.parse_args()
     if args.verbose:
         logger.setLevel(level=logging.INFO)
@@ -169,6 +171,8 @@ def main() -> bool | None:
     elif args.format == "html":
         html = to_html(header, table)
         Path(args.output).write_text(html, encoding="utf-8")
+    elif args.format == "xlsx":
+        to_xlsx(header, table, output=args.output)
     else:
         # create pretty table
         rich_table = to_rich_table(header, table)
@@ -258,6 +262,7 @@ def to_html(
 ) -> str:
     """convert table with list of lists to html table"""
     if index_column:
+        header = header.copy()
         header.insert(0, 'Index')
     tab = ' '*4
     table_head = '\n'.join([f"{tab*2}<th><button>{column}</button></th>" for column in header])
@@ -472,6 +477,7 @@ function table_sorter(column) {
 
 def to_csv(header: list[str], table: list[list[str | bool]]) -> str:
     """convert table with list of lists to csv table"""
+    table = table.copy()
     table.insert(0, header)
     output = StringIO()
     writer = csv.writer(output, lineterminator="\n")
@@ -481,9 +487,39 @@ def to_csv(header: list[str], table: list[list[str | bool]]) -> str:
     return csv_string
 
 
-def to_xlsx(header: list[str], table: list[list[str | bool]]) -> None:
+def to_xlsx(
+    header: list[str],
+    table: list[list[str | bool]],
+    output: str | Path
+) -> None:
     """convert table with list of lists to xlsx table"""
-    raise NotImplementedError("xlsx output is not implemented yet")
+    wb = Workbook()
+    ws = wb.active
+
+    fill = PatternFill(start_color="009879", end_color="009879", fill_type="solid")
+    checkmark_fill = PatternFill(start_color="dddddd", end_color="dddddd", fill_type="solid")
+    align = Alignment(horizontal="center")
+
+    for col_num, value in enumerate(header, 1):
+        cell = ws.cell(row=1, column=col_num, value=value)
+        cell.fill = fill
+        cell.alignment = align
+        ws.column_dimensions[cell.column_letter].width = max(len(str(value)), 4)
+
+    for row_num, row in enumerate(table, 2):
+        for col_num, value in enumerate(row, 1):
+            cell = ws.cell(row=row_num, column=col_num)
+            if isinstance(value, bool):
+                cell.value = '✔' if value else ''
+                cell.alignment = align
+                if value:
+                    cell.fill = checkmark_fill
+            else:
+                cell.value = value
+                ws.column_dimensions[cell.column_letter].width = max(ws.column_dimensions[cell.column_letter].width, len(str(value)))
+    if type(output) is Path:
+        output = str(output)
+    wb.save(output)
 
 
 if __name__ == "__main__":

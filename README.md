@@ -11,12 +11,12 @@ pip install git+https://github.com/streanger/sets-matcher.git
 ## usage (cli)
 
 ```
-usage: __main__.py [-h] [--verbose] [--output OUTPUT] [--format {csv,md,html}] files [files ...]
+usage: __main__.py [-h] [--verbose] [--output OUTPUT] [--format {csv,md,html,xlsx}] files [files ...]
 
 +----------------------------------------------------+
 |                    sets-matcher                    |
 |----------------------------------------------------|
-| version: 0.1.9                                     |
+| version: 0.2.0                                     |
 |    home: https://github.com/streanger/sets-matcher |
 +----------------------------------------------------+
 
@@ -27,13 +27,14 @@ options:
   -h, --help            show this help message and exit
   --verbose, -v
   --output OUTPUT, -o OUTPUT
-  --format {csv,md,html}, -f {csv,md,html}
+  --format {csv,md,html,xlsx}, -f {csv,md,html,xlsx}
 ```
 
 ```
 matcher --format md --output out.md set1.txt set2.txt set3.txt
 matcher --format csv --output out.csv *.txt
 matcher --output out.html *.txt
+matcher --output out.xlsx *.txt
 ```
 
 ## usage (python)
@@ -64,9 +65,9 @@ print(rich_table)
 ![image](images/matcher.png)
 ![image](images/matcher-to-html2.png)
 
-
 ## changelog
 
+- `0.2.0` - `to_xlsx` function
 - `0.1.9` - `index_column` param in `to_html` function
 - `0.1.8` - a little o typing, rich logging, few fixes
 - `0.1.7` - html header top sticky, cli - guess format based on output suffix, checkmark in md export, termcolor removed from dependencies
