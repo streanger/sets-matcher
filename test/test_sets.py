@@ -1,4 +1,4 @@
-from sets_matcher.sets_matcher import match_sets
+from sets_matcher import match_sets
 
 SETS_EXAMPLE = [
     {'some', 'thing', 'here'},

@@ -17,7 +17,7 @@ from rich.table import Table
 from sets_matcher.__version__ import __version__
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.WARNING,
     format="%(message)s",
     datefmt="[%X]",
     handlers=[RichHandler(markup=True)]
@@ -25,7 +25,7 @@ logging.basicConfig(
 logger = logging.getLogger("__name__")
 
 
-def match_files(files: list[str | Path], max_size: int | None = None) -> tuple[list[str], list[list[bool]]]:
+def match_files(files: list[str | Path], max_size: int | None = None) -> tuple[list[str], list[tuple[bool]]]:
     """Returns a list of sets that match in a matrix.
 
     files: list of files
@@ -71,7 +71,7 @@ def match_files(files: list[str | Path], max_size: int | None = None) -> tuple[l
     return match_sets(list_of_sets)
 
 
-def match_sets(list_of_sets: list[set[str]] | list[tuple[str, set[str]]]) -> tuple[list[str], list[list[bool]]]:
+def match_sets(list_of_sets: list[set[str]] | list[tuple[str, set[str]]]) -> tuple[list[str], list[tuple[bool]]]:
     """
     Returns a list of sets that match in a matrix.
 
@@ -94,7 +94,7 @@ def match_sets(list_of_sets: list[set[str]] | list[tuple[str, set[str]]]) -> tup
     keys = sorted(set.union(*list_of_sets))
     table = [[True if word in row else False for word in keys] for row in list_of_sets]
     table.insert(0, keys)
-    table = list(zip(*table))
+    table = list(zip(*table))  # zip returns iterator of tuples
     return header, table
 
 
@@ -123,7 +123,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--verbose", "-v", action="store_true")
     parser.add_argument("--output", "-o", type=Path)
     parser.add_argument("--format", "-f", choices=allowed_formats)
-    # TODO: --index - to add index column in output file
+    parser.add_argument("--index", "-i", action="store_true", help="creates index column")
     args = parser.parse_args()
     if args.verbose:
         logger.setLevel(level=logging.INFO)
@@ -163,19 +163,19 @@ def main() -> bool | None:
 
     # write to file
     if args.format == "csv":
-        csv = to_csv(header, table)
+        csv = to_csv(header, table, index_column=args.index)
         Path(args.output).write_text(csv, encoding="utf-8")
     elif args.format == "md":
-        md = to_markdown(header, table)
+        md = to_markdown(header, table, index_column=args.index)
         Path(args.output).write_text(md, encoding="utf-8")
     elif args.format == "html":
-        html = to_html(header, table)
+        html = to_html(header, table, index_column=args.index)
         Path(args.output).write_text(html, encoding="utf-8")
     elif args.format == "xlsx":
-        to_xlsx(header, table, output=args.output)
+        to_xlsx(header, table, output=args.output, index_column=args.index)
     else:
         # create pretty table
-        rich_table = to_rich_table(header, table)
+        rich_table = to_rich_table(header, table, index_column=args.index)
         print(rich_table)
         return None
 
@@ -202,6 +202,7 @@ def expand_globs(raw_files: list[str|Path]) -> list[Path]:
 def to_rich_table(
     header: list[str],
     table: list[list[str | bool]],
+    index_column: bool = False,
     show_lines: bool = False,
     key_style: str = 'green'
 ) -> Table:
@@ -213,6 +214,11 @@ def to_rich_table(
         show_lines (bool): show table horizontal lines
         key_style (str): key column style - one of: regular, green, blue
     """
+    if index_column:
+        header = list(header)
+        header.insert(0, 'Index')
+        table = [[index] + list(row) for index, row in enumerate(table, start=1)]
+
     rich_table = Table(
         highlight=True,
         border_style="blue",
@@ -230,7 +236,7 @@ def to_rich_table(
             rich_table.add_column(column, style=style, justify="right")
         else:
             rich_table.add_column(column, justify="center")
-    for index, row in enumerate(table):
+    for row in table:
         key, *values = row
         key = str(key)
         values = [str(x) for x in values]
@@ -238,10 +244,14 @@ def to_rich_table(
     return rich_table
 
 
-def to_markdown(header: list[str], table: list[list[str | bool]]) -> str:
+def to_markdown(
+    header: list[str],
+    table: list[list[str | bool]],
+    index_column: bool = False
+) -> str:
     """convert table with list of lists to markdown table (github flavored)"""
     def apply_marker(item: str|bool) -> str:
-        marker_true = "[ ✓ ]"
+        marker_true = "✓"
         marker_false = ""
         if type(item) is bool:
             if item:
@@ -249,6 +259,12 @@ def to_markdown(header: list[str], table: list[list[str | bool]]) -> str:
             else:
                 return marker_false
         return item
+
+    if index_column:
+        header = list(header)
+        header.insert(0, 'Index')
+        table = [[index] + list(row) for index, row in enumerate(table, start=1)]
+
     table = [[apply_marker(item) for item in row] for row in table]
     md = tabulate.tabulate(table, header, tablefmt="github")
     return md
@@ -262,26 +278,27 @@ def to_html(
 ) -> str:
     """convert table with list of lists to html table"""
     if index_column:
-        header = header.copy()
+        header = list(header)
         header.insert(0, 'Index')
+        table = [[index] + list(row) for index, row in enumerate(table, start=1)]
+
     tab = ' '*4
     table_head = '\n'.join([f"{tab*2}<th><button>{column}</button></th>" for column in header])
+    table_head = f'{tab*2}<tr>\n{table_head}\n{tab*2}</tr>'
     table_body = ""
-    for row_index, row in enumerate(table, start=1):
+    for row in table:
         cells = []
-        if index_column:
-            cells.append(f'{tab*3}<td>{row_index}</td>\n')
         for column in row:
             if type(column) is bool:
                 if column:
                     column = "✓"
-                    cell_class = 'class="marker"'
+                    cell_class = ' class="marker"'
                 else:
                     column = ""
                     cell_class = ""
             else:
                 cell_class = ""
-            cells.append(f"{tab*3}<td {cell_class}>{column}</td>\n")
+            cells.append(f"{tab*3}<td{cell_class}>{column}</td>\n")
         joined_cells = ''.join(cells)
         table_body += f"{tab*2}<tr>\n{joined_cells}{tab*2}</tr>\n"
     table_body = table_body.rstrip()
@@ -461,9 +478,7 @@ function table_sorter(column) {
 <body onload=main()>
     <table class="styled-table">
     <thead>
-        <tr>
 {table_head}
-        </tr>
     </thead>
     <tbody>
 {table_body}
@@ -475,12 +490,20 @@ function table_sorter(column) {
     return template
 
 
-def to_csv(header: list[str], table: list[list[str | bool]]) -> str:
+def to_csv(
+    header: list[str],
+    table: list[list[str | bool]],
+    index_column: bool = False
+) -> str:
     """convert table with list of lists to csv table"""
-    table = table.copy()
-    table.insert(0, header)
+    if index_column:
+        header = list(header)
+        header.insert(0, 'Index')
+        table = [[index] + list(row) for index, row in enumerate(table, start=1)]
+
     output = StringIO()
     writer = csv.writer(output, lineterminator="\n")
+    writer.writerow(header)
     for row in table:
         writer.writerow(row)
     csv_string = output.getvalue()
@@ -490,9 +513,15 @@ def to_csv(header: list[str], table: list[list[str | bool]]) -> str:
 def to_xlsx(
     header: list[str],
     table: list[list[str | bool]],
-    output: str | Path
+    index_column: bool = False,
+    output: str | Path = "out.xlsx"
 ) -> None:
     """convert table with list of lists to xlsx table"""
+    if index_column:
+        header = list(header)
+        header.insert(0, 'Index')
+        table = [[index] + list(row) for index, row in enumerate(table, start=1)]
+
     wb = Workbook()
     ws = wb.active
 
@@ -506,9 +535,9 @@ def to_xlsx(
         cell.alignment = align
         ws.column_dimensions[cell.column_letter].width = max(len(str(value)), 4)
 
-    for row_num, row in enumerate(table, 2):
+    for index, row in enumerate(table, 2):
         for col_num, value in enumerate(row, 1):
-            cell = ws.cell(row=row_num, column=col_num)
+            cell = ws.cell(row=index, column=col_num)
             if isinstance(value, bool):
                 cell.value = '✔' if value else ''
                 cell.alignment = align

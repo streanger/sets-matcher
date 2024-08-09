@@ -11,12 +11,12 @@ pip install git+https://github.com/streanger/sets-matcher.git
 ## usage (cli)
 
 ```
-usage: __main__.py [-h] [--verbose] [--output OUTPUT] [--format {csv,md,html,xlsx}] files [files ...]
+usage: __main__.py [-h] [--verbose] [--output OUTPUT] [--format {csv,md,html,xlsx}] [--index] files [files ...]
 
 +----------------------------------------------------+
 |                    sets-matcher                    |
 |----------------------------------------------------|
-| version: 0.2.0                                     |
+| version: 0.2.1                                     |
 |    home: https://github.com/streanger/sets-matcher |
 +----------------------------------------------------+
 
@@ -28,6 +28,7 @@ options:
   --verbose, -v
   --output OUTPUT, -o OUTPUT
   --format {csv,md,html,xlsx}, -f {csv,md,html,xlsx}
+  --index, -i           creates index column
 ```
 
 ```
@@ -67,6 +68,7 @@ print(rich_table)
 
 ## changelog
 
+- `0.2.1` - import fix for `to_xlsx`, default logging.level as WARNING, `--index` and `index_column` params for cli and export functions
 - `0.2.0` - `to_xlsx` function
 - `0.1.9` - `index_column` param in `to_html` function
 - `0.1.8` - a little o typing, rich logging, few fixes

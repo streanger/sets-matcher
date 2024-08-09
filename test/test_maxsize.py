@@ -1,6 +1,6 @@
 from pathlib import Path
 import pytest
-from sets_matcher.sets_matcher import match_files
+from sets_matcher import match_files
 
 def test_maxsize_of_match_files():
     """test charset detection"""

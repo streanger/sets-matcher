@@ -2,8 +2,7 @@
 import hashlib
 from pathlib import Path
 from openpyxl import load_workbook
-from sets_matcher.sets_matcher import (match_sets, to_csv, to_html,
-                                       to_markdown, to_xlsx)
+from sets_matcher import match_sets, to_csv, to_html, to_markdown, to_xlsx
 
 SETS_EXAMPLE = [
     {'some', 'thing', 'here'},
@@ -85,5 +84,26 @@ def test_export_xlsx():
     assert test_wb == new_wb
 
     # make sure new file is removed after test
+    new_xlsx_path.unlink(missing_ok=True)
+    assert not new_xlsx_path.exists()
+
+
+def test_input_data():
+    header, table = match_sets(SETS_EXAMPLE)
+
+    # different types of data
+    # INFO: it should be the case for static typin,
+    # but as long as its not fully correct
+    # its better to test that way, than nothing
+    header = tuple(header)
+    table = [list(row) for row in table]
+
+    html = to_html(header, table, index_column=True)
+    csv = to_csv(header, table, index_column=True)
+    md = to_markdown(header, table, index_column=True)
+
+    new_xlsx_path = Path('test/out/new.xlsx')
+    new_xlsx_path.unlink(missing_ok=True)
+    to_xlsx(header, table, index_column=True, output=new_xlsx_path)
     new_xlsx_path.unlink(missing_ok=True)
     assert not new_xlsx_path.exists()

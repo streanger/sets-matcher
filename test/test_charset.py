@@ -1,7 +1,7 @@
 # TODO: write tests for different characters set e.g. ascii, UTF-8, UTF-16, UTF-32
 
 from pathlib import Path
-from sets_matcher.sets_matcher import match_files
+from sets_matcher import match_files
 
 def test_charset():
     """test charset detection"""
