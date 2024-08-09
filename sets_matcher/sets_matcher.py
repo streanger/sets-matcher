@@ -1,5 +1,6 @@
 import argparse
 import csv
+from functools import wraps
 import html
 import logging
 import os
@@ -199,10 +200,24 @@ def expand_globs(raw_files: list[str|Path]) -> list[Path]:
     return files
 
 
+def handle_index_column(func):
+    @wraps(func)
+    def wrapper(header, table, index_column: bool=False, *args, **kwargs):
+        if index_column:
+            header = list(header)
+            header.insert(0, 'Index')
+            table = [
+                [index] + list(row)
+                for index, row in enumerate(table, start=1)
+            ]
+        return func(header, table, *args, **kwargs)
+    return wrapper
+
+
+@handle_index_column
 def to_rich_table(
     header: list[str],
     table: list[list[str | bool]],
-    index_column: bool = False,
     show_lines: bool = False,
     key_style: str = 'green'
 ) -> Table:
@@ -214,11 +229,6 @@ def to_rich_table(
         show_lines (bool): show table horizontal lines
         key_style (str): key column style - one of: regular, green, blue
     """
-    if index_column:
-        header = list(header)
-        header.insert(0, 'Index')
-        table = [[index] + list(row) for index, row in enumerate(table, start=1)]
-
     rich_table = Table(
         highlight=True,
         border_style="blue",
@@ -244,11 +254,8 @@ def to_rich_table(
     return rich_table
 
 
-def to_markdown(
-    header: list[str],
-    table: list[list[str | bool]],
-    index_column: bool = False
-) -> str:
+@handle_index_column
+def to_markdown(header: list[str], table: list[list[str | bool]]) -> str:
     """convert table with list of lists to markdown table (github flavored)"""
     def apply_marker(item: str|bool) -> str:
         marker_true = "✓"
@@ -260,11 +267,6 @@ def to_markdown(
                 return marker_false
         return item
 
-    if index_column:
-        header = list(header)
-        header.insert(0, 'Index')
-        table = [[index] + list(row) for index, row in enumerate(table, start=1)]
-
     table = [[apply_marker(item) for item in row] for row in table]
     md = tabulate.tabulate(table, header, tablefmt="github")
     return md
@@ -273,8 +275,8 @@ def to_markdown(
 def to_html(
     header: list[str],
     table: list[list[str | bool]],
+    index_column: bool = False,
     title: str = "sets-matcher",
-    index_column: bool = False
 ) -> str:
     """convert table with list of lists to html table"""
     if index_column:
@@ -490,17 +492,9 @@ function table_sorter(column) {
     return template
 
 
-def to_csv(
-    header: list[str],
-    table: list[list[str | bool]],
-    index_column: bool = False
-) -> str:
+@handle_index_column
+def to_csv(header: list[str], table: list[list[str | bool]]) -> str:
     """convert table with list of lists to csv table"""
-    if index_column:
-        header = list(header)
-        header.insert(0, 'Index')
-        table = [[index] + list(row) for index, row in enumerate(table, start=1)]
-
     output = StringIO()
     writer = csv.writer(output, lineterminator="\n")
     writer.writerow(header)
@@ -510,18 +504,13 @@ def to_csv(
     return csv_string
 
 
+@handle_index_column
 def to_xlsx(
     header: list[str],
     table: list[list[str | bool]],
-    index_column: bool = False,
     output: str | Path = "out.xlsx"
 ) -> None:
     """convert table with list of lists to xlsx table"""
-    if index_column:
-        header = list(header)
-        header.insert(0, 'Index')
-        table = [[index] + list(row) for index, row in enumerate(table, start=1)]
-
     wb = Workbook()
     ws = wb.active
 
