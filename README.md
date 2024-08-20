@@ -68,6 +68,7 @@ print(rich_table)
 
 ## changelog
 
+- `0.2.2` - get rid of concat in `to_html`, which could be really slow for larger tables
 - `0.2.1` - import fix for `to_xlsx`, default logging.level as WARNING, `--index` and `index_column` params for cli and export functions
 - `0.2.0` - `to_xlsx` function
 - `0.1.9` - `index_column` param in `to_html` function

@@ -287,7 +287,7 @@ def to_html(
     tab = ' '*4
     table_head = '\n'.join([f"{tab*2}<th><button>{column}</button></th>" for column in header])
     table_head = f'{tab*2}<tr>\n{table_head}\n{tab*2}</tr>'
-    table_body = ""
+    table_body = []
     for row in table:
         cells = []
         for column in row:
@@ -302,8 +302,8 @@ def to_html(
                 cell_class = ""
             cells.append(f"{tab*3}<td{cell_class}>{column}</td>\n")
         joined_cells = ''.join(cells)
-        table_body += f"{tab*2}<tr>\n{joined_cells}{tab*2}</tr>\n"
-    table_body = table_body.rstrip()
+        table_body.append(f"{tab*2}<tr>\n{joined_cells}{tab*2}</tr>")
+    table_body = "\n".join(table_body)
 
     # TODO: read style & script from files
     style = """\
